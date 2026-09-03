@@ -35,7 +35,6 @@ services:
     name: nove-dashboard
     runtime: static
     plan: free
-    region: oregon
     branch: main
     rootDir: dashboard
     buildCommand: |
