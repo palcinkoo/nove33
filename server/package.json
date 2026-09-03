@@ -1,0 +1,24 @@
+{
+  "name": "nove-server",
+  "version": "3.2.0-ext",
+  "description": "Nove v3.2.0-ext server (Express + Firebase Admin)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node index-extended.js",
+    "dev": "node --watch index-extended.js",
+    "check": "node --check index-extended.js && node --check mount.js && node --check lib/firebase.js && node --check lib/middleware.js && node --check routes/extended.js && node --check routes/files.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "firebase-admin": "^12.7.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0"
+  }
+}
