@@ -69,3 +69,60 @@ pre.result {
   background: #0d1117; border: 1px solid #2d3748; border-radius: 6px;
   padding: 12px; font-size: 12px; max-height: 400px; overflow: auto; white-space: pre-wrap;
 }
+
+/* App-extended auth styles */
+.auth-page {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 24px;
+}
+.auth-card {
+  width: 100%; max-width: 380px; padding: 28px;
+  border: 1px solid #2d3748; border-radius: 14px; background: rgba(13,17,23,0.85);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.auth-brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 10px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  color: #fff; font-weight: 700; font-size: 22px;
+}
+.brand-text h1 { margin: 0; font-size: 18px; }
+.brand-text p { margin: 2px 0 0; font-size: 12px; color: #8b949e; }
+
+.btn-google, .btn-primary, .auth-switch {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid #2d3748; border-radius: 8px; padding: 10px 14px;
+  background: #1f2937; color: #e6edf3; cursor: pointer; font-size: 14px;
+  font-family: inherit;
+}
+.btn-google:hover, .btn-primary:hover { background: #2d3748; }
+.btn-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border: none; }
+.btn-primary:hover { filter: brightness(1.1); }
+.auth-switch { background: transparent; border: none; color: #58a6ff; padding: 4px; font-size: 13px; }
+
+.divider {
+  display: flex; align-items: center; gap: 8px; color: #8b949e; font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: ""; flex: 1; height: 1px; background: #2d3748;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 10px; }
+.auth-form input {
+  width: 100%; padding: 10px 12px;
+}
+
+.auth-status { margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px;
+}
+.pill-online { background: #0f3a25; color: #3fb950; }
+.pill-offline { background: #3a0f0f; color: #f85149; }
+.pill-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+}
+
+.hint { font-size: 12px; padding: 8px 10px; border-radius: 6px; }
+.hint-error { background: #3a0f0f; color: #ff7b72; }

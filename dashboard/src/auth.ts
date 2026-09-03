@@ -12,47 +12,63 @@ import { auth as fbAuth } from "./firebase"
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
-  const [ready, setReady] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [token, setToken] = useState<string>("")
   const a = fbAuth()
   useEffect(() => {
-    if (!a) { setReady(true); return }
-    return onAuthStateChanged(a, (u) => { setUser(u); setReady(true) })
+    if (!a) { setLoading(false); return }
+    let unsub = () => {}
+    unsub = onAuthStateChanged(a, async (u) => {
+      setUser(u)
+      if (u) {
+        try { setToken(await u.getIdToken()) } catch { setToken("") }
+      } else {
+        setToken("")
+      }
+      setLoading(false)
+    })
+    return () => unsub()
   }, [a])
-  return { user, ready, signedIn: !!user }
+  const refreshToken = useCallback(async () => {
+    if (!a?.currentUser) return
+    setToken(await a.currentUser.getIdToken(true))
+  }, [a])
+  return { user, loading, token, refreshToken }
 }
 
 export function useSignIn() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const a = fbAuth()
 
-  const signInEmail = useCallback(async (email: string, password: string) => {
-    const a = fbAuth(); if (!a) { setError("Firebase not initialized"); return }
+  const email = useCallback(async (addr: string, password: string, mode: "in" | "up") => {
+    if (!a) { setError("Firebase not initialized"); return }
     setBusy(true); setError(null)
-    try { await signInWithEmailAndPassword(a, email, password) }
-    catch (e: any) { setError(e?.message ?? String(e)) }
-    finally { setBusy(false) }
-  }, [])
+    try {
+      if (mode === "up") {
+        await createUserWithEmailAndPassword(a, addr, password)
+      } else {
+        await signInWithEmailAndPassword(a, addr, password)
+      }
+    } catch (e: any) {
+      setError(e?.message ?? String(e))
+    } finally {
+      setBusy(false)
+    }
+  }, [a])
 
-  const signUpEmail = useCallback(async (email: string, password: string) => {
-    const a = fbAuth(); if (!a) { setError("Firebase not initialized"); return }
-    setBusy(true); setError(null)
-    try { await createUserWithEmailAndPassword(a, email, password) }
-    catch (e: any) { setError(e?.message ?? String(e)) }
-    finally { setBusy(false) }
-  }, [])
-
-  const signInGoogle = useCallback(async () => {
-    const a = fbAuth(); if (!a) { setError("Firebase not initialized"); return }
+  const google = useCallback(async () => {
+    if (!a) { setError("Firebase not initialized"); return }
     setBusy(true); setError(null)
     try { await signInWithPopup(a, new GoogleAuthProvider()) }
     catch (e: any) { setError(e?.message ?? String(e)) }
     finally { setBusy(false) }
-  }, [])
+  }, [a])
 
   const signOutCurrent = useCallback(async () => {
-    const a = fbAuth(); if (!a) return
+    if (!a) return
     try { await signOut(a) } catch (e) { console.error(e) }
-  }, [])
+  }, [a])
 
-  return { busy, error, signInEmail, signUpEmail, signInGoogle, signOut: signOutCurrent }
+  return { busy, error, google, email, signOut: signOutCurrent }
 }
