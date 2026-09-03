@@ -1,0 +1,16 @@
+node_modules/
+dist/
+var/
+.firebase/
+.firebase/
+*.log
+.env
+.env.local
+.DS_Store
+firebase-emulator-data/
+firebase-emulator.log
+firebase-emulator.pid
+keystore/
+*.jks
+*.apk
+*.aab

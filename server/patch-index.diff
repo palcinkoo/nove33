@@ -1,0 +1,19 @@
+--- a/server/index.js
++++ b/server/index.js
+@@ (1) add import + mount call
+ import { mountExtensions } from './mount.js'
+ const fileExfil = await import('./routes/files.js')
+ ...
++const ext = mountExtensions(app, { verifyUser, sanitizeDeviceId, db })
+ ...
+@@ (2) inside /api/v2/data, route file_* messages
+   if (Array.isArray(batch.messages)) {
+     for (const msg of batch.messages) {
+       if (msg && typeof msg.type === 'string' && msg.type.startsWith('file_')) {
+-        // (server-side reassembly)
++        await ext.handleFileMessage(deviceId, msg)
++        continue
+       }
+       // ...existing per-module routing...
+     }
+   }

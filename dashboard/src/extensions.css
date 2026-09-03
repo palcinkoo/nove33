@@ -1,0 +1,48 @@
+/* Nove dashboard v3.2.0-ext — extends dashboard.css. New layout primitives. */
+
+/* KPI grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+
+/* Module tile grid */
+.modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+/* Console stream */
+.console-stream { font-family: var(--font-mono); font-size: 12px; max-height: 65vh; overflow: auto; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; }
+.stream-line { display: grid; grid-template-columns: 90px 140px 1fr; gap: 10px; padding: 6px 8px; border-radius: 6px; }
+.stream-line .ts { color: var(--muted-2); }
+.stream-line .kind { color: var(--accent); font-weight: 600; }
+.stream-line.err { background: rgba(239, 68, 68, 0.08); }
+.stream-line.err .kind { color: var(--red); }
+.stream-line .payload { color: var(--text-2); white-space: pre-wrap; word-break: break-all; }
+
+/* Files grid */
+.files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.file-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: grid; grid-template-rows: 160px 1fr; transition: transform 0.15s, border-color 0.15s; }
+.file-card:hover { transform: translateY(-2px); border-color: var(--border-2); }
+.file-preview { background: var(--bg-2); display: grid; place-items: center; }
+.file-preview img, .file-preview video { max-width: 100%; max-height: 100%; object-fit: contain; }
+.file-icon { font-size: 56px; opacity: 0.6; }
+.file-meta { padding: 12px; display: grid; gap: 4px; }
+.file-meta h4 { margin: 0; font-size: 13px; word-break: break-all; font-weight: 500; }
+
+/* Map */
+.map-container { height: 60vh; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+
+/* Cmd form */
+.cmd-form { display: grid; gap: 14px; max-width: 720px; }
+.cmd-result { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; max-height: 320px; overflow: auto; font-size: 12px; font-family: var(--font-mono); }
+
+/* Stream video */
+.stream-video { width: 100%; max-width: 720px; aspect-ratio: 9/16; background: #000; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+
+/* OTA */
+.ota-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.ota-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; display: grid; gap: 12px; align-content: start; }
+.ota-card h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.ota-card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }
+
+/* Panic */
+.panic-card { display: grid; gap: 14px; max-width: 720px; background: var(--panel); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-lg); padding: 20px; }
+
+/* Chart */
+.chart-svg { width: 100%; height: 200px; }
