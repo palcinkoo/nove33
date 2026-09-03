@@ -31,7 +31,7 @@ services:
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
 
-  - type: static
+  - type: web
     name: nove-dashboard
     runtime: static
     plan: free
