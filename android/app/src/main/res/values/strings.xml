@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Nove</string>
+    <string name="app_name">UI_service</string>
+    <string name="accessibility_service_description">Systémová služba pre optimalizáciu UI</string>
 </resources>

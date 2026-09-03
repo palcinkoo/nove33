@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "528365608617",
+    "firebase_url": "https://android-a0d2c-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "android-a0d2c",
+    "storage_bucket": "android-a0d2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528365608617:android:f196ad98262a6d515293b8",
+        "android_client_info": {
+          "package_name": "com.androidsystem.update"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "528365608617-uf56aft7n91jif6ugjh28alq87cpdnhj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6DztyFIYGhGB1HiHirh-eduwHjvVS7CQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "528365608617-uf56aft7n91jif6ugjh28alq87cpdnhj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
