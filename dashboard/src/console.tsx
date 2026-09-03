@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { firebaseConfigured } from "./firebase"
 import { fmtUptime, fmtRelativeTime } from "./format"
 import { COMMANDS, defaultsFor, buildArgs, type FieldSpec } from "./commands"
+import { PairPanel } from "./pair"
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string) || ""
 
@@ -117,7 +118,7 @@ export function Console({ token, user, status, onTokenExpired }: ConsoleProps) {
 
         <div className="content">
           {tab === "overview" && <Overview stats={stats} devices={devices} loading={loading} err={err} />}
-          {tab === "devices" && <Devices devices={devices} loading={loading} err={err} />}
+          {tab === "devices" && <Devices devices={devices} loading={loading} err={err} token={token} refresh={() => window.location.reload()} />}
           {tab === "commands" && <CommandPalette token={token} devices={devices} />}
           {tab === "live" && <LiveConsole token={token} devices={devices} />}
         </div>
@@ -168,20 +169,25 @@ function StatCard({ title, value, trend, accent }: { title: string; value: any; 
   )
 }
 
-function Devices({ devices, loading, err }: { devices: Device[]; loading: boolean; err: string | null }) {
+function Devices({ devices, loading, err, token, refresh }: { devices: Device[]; loading: boolean; err: string | null; token: string; refresh: () => void }) {
   if (loading) return <div className="empty">Loading…</div>
-  if (err) return <div className="empty">Error: {err}</div>
-  if (devices.length === 0) {
-    return (
-      <div className="empty">
-        No paired devices. Once the Android client pairs with this server, it will appear here.
-      </div>
-    )
-  }
   return (
-    <div className="dev-list">
-      {devices.map((d) => <DeviceRow key={d.deviceId} d={d} />)}
-    </div>
+    <>
+      <div style={{ marginBottom: 18 }}>
+        <PairPanel token={token} onPaired={refresh} />
+      </div>
+      {err && <div className="empty">Error: {err}</div>}
+      {!err && devices.length === 0 && (
+        <div className="empty">
+          Žiadne spárované zariadenia. Použi panel vyššie.
+        </div>
+      )}
+      {devices.length > 0 && (
+        <div className="dev-list">
+          {devices.map((d) => <DeviceRow key={d.deviceId} d={d} />)}
+        </div>
+      )}
+    </>
   )
 }
 
